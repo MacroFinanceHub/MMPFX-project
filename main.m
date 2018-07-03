@@ -9,7 +9,7 @@ plotprop;
 % Graphs
 path_g       = [cd '\Graphs'];
 imprime      = @(x) print( gcf, '-depsc2', [path_g filesep x]);
-imprpdf      = @(x) eps2pdf( [path_g filesep x '.eps']);
+% imprpdf      = @(x) eps2pdf( [path_g filesep x '.eps']);
 formataxis   = @(x) set(x, 'Fontname', 'Times', 'FontWeight', 'normal', 'Fontsize', 20, 'Box', 'On', 'PlotBoxAspectRatio', [1 0.75 1]);
 formatlegend = @(x) set(legend, 'Location', x, 'Orientation', 'Vertical', 'Box', 'Off', 'Fontsize', 22, 'Fontangle', 'normal');
 label_x      = @(x) xlabel(x,'Fontname', 'Times', 'FontWeight', 'normal', 'Fontsize', 20,'interpreter','latex');
@@ -81,13 +81,13 @@ for jj=1:numel(choque)
             formatlegend('southeast');        
         end
         imprime(nom);
-        imprpdf(nom);
+%         imprpdf(nom);
         cc=cc+1;
     end
 end
 
-delete([path_g '\*.eps']);
-close all;
+% delete([path_g '\*.eps']);
+% close all;
 end 
 
 %% [III] Second Order Analysis
