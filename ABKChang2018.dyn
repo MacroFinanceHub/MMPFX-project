@@ -1,0 +1,179 @@
+%%  MOD: Aoki, Benigno y Kiyotaki (2016) + Chang (2018)
+% By: Alex Carrasco, 2018
+
+@#ifndef compute_optimal_policy
+    @#define compute_optimal_policy=1
+@#endif
+
+@#ifndef compute_2ndIRF
+    @#define compute_2ndIRF=1
+@#endif
+
+%% [1] Definition of endogenous variables
+var C Yx Z Q M Kh R w L  pi mC Y rer A I  Yf Kb K N D Df Rf, 
+    x muf  mudf mu v phi psi Theta tauN tauK tauDf i F B Rb GDP,
+    instutil U;
+    
+%% [2] Definition of exogenous variables
+varexo res_i res_Rf res_Yf res_A res_b;
+
+%% [3] Parameters
+parameters Beta lambda chi zeta0 zeta kappa eta alphaK alphaM varphi kappaI,
+          Sigma xi Gamma theta rhoi omegapi rhoRf rhoYf rhoA omegatauDf omegatauK omega,
+          rho_b v_e RR lambda_cost sigma_b sigma_i sigma_a sigma_yf sigma_rf;
+
+% [3.1] Banks
+theta = 0.475;
+Gamma = 6.4;
+Sigma = 0.94;
+xi = 5.88*1e-4;
+
+% [3.2] Workers
+Beta = 0.9852;
+zeta = 0.2;
+zeta0 = 5.89;
+chi  = 9.85*1e-4;
+
+% [3.3] Producers
+alphaK = 0.3;
+alphaM = 0.15;
+lambda = 0.98;
+eta    = 9;
+kappaI = 1;
+varphi = 2;
+
+% [3.4] Adicionales
+% Policy rules
+RR         = 0.05;
+omegatauDf = 0;          
+omegatauK  = 0;     
+v_e        = 0;
+omegapi    = 1.5;
+
+% Exogenous process
+rhoA = 0.95;
+rhoRf = 0.95;
+rhoYf = 0.95;
+rhoi = 0.85;
+rho_b = 0.75;
+
+omega = 0.10;
+kappa = (eta-1)*omega/((1-omega)*(1-Beta*omega));      
+
+lambda_cost = 0;
+
+sigma_i  = 0.01/4;
+sigma_a  = 0.001;
+sigma_rf = 0.01/4;
+sigma_yf = 0.01;
+sigma_b = 0.1;
+
+%% [4] Model
+model;
+# SDF = Beta*(exp(C)-zeta0*exp((1+zeta)*L)/(1+zeta))/(exp(C(+1))-zeta0*exp((1+zeta)*L(+1))/(1+zeta));
+# Phi = kappaI*(exp(I-steady_state(I))-1)^2/2; 
+# Phiprim = kappaI*(exp(I-steady_state(I))-1); 
+
+% [4.1] Households
+1 = (SDF)*(Z(+1)+lambda*exp(Q(+1)))/(exp(Q)+chi*exp(Kh));                                         %eq 1
+1 = (SDF)*R(+1);                                                                                  %eq 2
+w = zeta0*exp(zeta*L);                                                                            %eq 3   
+
+% [4.2] Producers
+mC = (w^(1-alphaK-alphaM)*Z^alphaK*exp(rer*alphaM))/A;                                            %eq 4
+exp(Y) = A*(exp(K(-1))/alphaK)^alphaK*(exp(M)/alphaM)^alphaM*(exp(L)/(1-alphaK-alphaM))^(1-alphaK-alphaM);  %eq 5
+exp(rer+M) = (alphaM/alphaK)*Z*exp(K(-1));                                                        %eq 6
+w*exp(L) = ((1-alphaK-alphaM)/alphaK)*Z*exp(K(-1));                                               %eq 7    
+exp(Y) = (exp(C) + (1+Phi)*exp(I) + exp(Yx)  + chi*exp(Kh)^2/2)/(1-kappa*(pi)^2/2);               %eq 8
+exp(Yx) = exp(rer*varphi)*exp(Yf);                                                                %eq 9
+(1+pi)*pi = (1/kappa)*(eta*mC + 1 - eta) + (SDF)*pi(+1)*(1+pi(+1))*exp(Y(+1)-Y);                  %eq10
+
+% [4.3] Capital Producers
+exp(I) = exp(K) - lambda*exp(K(-1));                                                              %eq 11
+exp(Q) = 1 + Phi  + exp(I-steady_state(I))*(Phiprim);                                             %eq 12
+exp(K) = exp(Kh) + exp(Kb);                                                                       %eq 13
+
+% [4.4] Bancos
+exp(Q+Kb)+exp(B)  = exp(N) + exp(D) + exp(rer + Df);                                                        %eq 14
+exp(N) = (Sigma + xi)*Rb*(exp(Q(-1)+Kb(-1))+exp(B(-1)))- Sigma*R*exp(D(-1)) - Sigma*Rf(-1)*exp(rer+Df(-1)); %eq 15
+x = exp(rer+Df)/(exp(Q+Kb)+exp(B));                                                                         %eq 16 
+mudf = (1-Sigma+Sigma*psi(+1))*(SDF)*((1-tauDf)*R(+1) - exp(rer(+1)-rer)*Rf);                               %eq 17
+mu   =  (1-Sigma+Sigma*psi(+1))*(SDF)*( Rb(+1) - (1+tauK)*R(+1));                                           %eq 18    
+muf= mudf/mu;                                                                               %eq 19
+x = (1/muf)*(-1 + sqrt(1+2*muf^2/Gamma));                                                   %eq 20
+v = (1-Sigma+Sigma*psi(+1))*(SDF)*(1+tauN)*R(+1);                                           %eq 21
+phi = (exp(Q+Kb)+exp(B))/exp(N);                                                            %eq 22
+phi = v/(Theta - (mu+mudf*x));                                                              %eq 23    
+Theta = theta*(1+Gamma*x^2/2);                                                              %eq 24   
+psi= Theta*phi;                                                                             %eq 25
+
+% [4.5] Agregados
+exp(Df)  = -( exp(Yx-rer) - exp(M)) + Rf(-1)*exp(Df(-1)) + (exp(F)-Rf(-1)*exp(F(-1)));      %eq 26  
+R        = (1+i(-1))/(1+pi);                                                                %eq 27
+Rb       = (Z + lambda*exp(Q))/exp(Q(-1));                                                  %eq 28                    
+tauN = tauK*phi + tauDf*phi*x;                                                              %eq 29
+i = steady_state(i) + (1-rhoi)*omegapi*pi+rhoi*(i(-1)-steady_state(i)) + sigma_i*res_i;     %eq 30
+Rf     =   (1-rhoRf)*steady_state(Rf) + rhoRf*Rf(-1) + sigma_rf*res_Rf;                     %eq 31
+Yf = (1-rhoYf)*steady_state(Yf) + rhoYf*Yf(-1) + sigma_yf*res_Yf;                           %eq 32
+log(A) = (1-rhoA)*log(steady_state(A)) + rhoA*log(A(-1)) + sigma_a*res_A;                   %eq 33
+
+% [4.6] Policy
+exp(B) = exp(rer+F);                                                                        %eq 34
+B = (1-rho_b)*steady_state(B)+rho_b*B(-1)-v_e*(rer-steady_state(rer))+sigma_b*res_b;        %eq 35
+tauDf = omegatauDf*(log(Kb) - log(steady_state(Kb)));                                       %eq 36
+tauK  = omegatauK;                                                                          %eq 37
+
+% extra definitions
+exp(GDP)   = exp(Y) - exp(rer+M);                                                           %eq 38
+
+% welfare analysis
+instutil  = log((1-lambda_cost)*exp(C)-zeta0*exp(L)^(1+zeta)/(1+zeta));
+U = instutil + Beta*U(+1);
+end;
+
+%% [5] Steady-state
+steady;
+check;
+
+shocks;
+var res_i;
+stderr 1;
+var res_Rf;
+stderr 1;
+var res_Yf;
+stderr 1;
+var res_A;
+stderr 1;
+var res_b;
+stderr 1;
+end;
+
+@#if compute_2ndIRF
+    stoch_simul(order=2,irf=0,noprint,nograph); 
+@#else
+    stoch_simul(order=1,irf=100,noprint,nograph); 
+@#endif
+
+
+@#if compute_optimal_policy
+    stoch_simul(order=2,irf=0,noprint); 
+    x_start=[0.01 0.1 1.5]';
+    %define parameters to be optimized and their upper and lower bound
+    x_opt_name={'v_e',0,Inf
+                'omegatauDf',0,Inf 
+                'omegapi',1,Inf};
+
+    options_.nofunctions=1;
+    options_.nograph=1;
+    options_.verbosity=0;
+
+    %set noprint option to suppress error messages within optimizer
+    options_.noprint=1;
+    options_.TeX=0;
+    % set csminwel options
+    H0   = 1e-1*eye(length(x_start)); %Initial Hessian 
+    crit = 1e-8; %Tolerance
+    nit  = 1000;  %Number of iterations
+    [fhat,x_opt_hat] = csminwel(@welfare_objective,x_start,H0,[],crit,nit,x_opt_name);
+@#endif
+
