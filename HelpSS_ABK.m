@@ -18,7 +18,7 @@ function [s,x,fopt]=HelpSS_ABK(beta,sigma,xi,sf,theta,gamma,tauK,tauD)
 % [1] s: Exceso de retorno del capital respecto al costo de deposito nacional
 % [2] x: Porción del capital bancario financiado con depósitos externos.
 % =======================================================
-% By Alcarmar, Nov 2016
+% By Alex Carrasco, 2018
 % =======================================================
 
     function yy=findSS(X,beta,sigma,xi,sf,theta,gamma,tauK,tauD)

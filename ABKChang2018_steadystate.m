@@ -1,4 +1,4 @@
-function [ys,check] = ABK_2016_steadystate(ys,exo)
+function [ys,check] = ABKChang2018_steadystate(ys,exo)
 % function [ys,check] = modeloOpen1_steadystate(ys,exo)
 % computes the steady state for the NK_baseline.mod and uses a numerical
 % solver to do so
